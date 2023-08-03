@@ -25,42 +25,80 @@ class _ExpensesState extends State<Expenses> {
       category: Category.leisure,
     ),
   ];
+
+  void _addExpense(Expense expense) {
+    setState(() {
+      _registeredExpenses.add(expense);
+    });
+  }
+
+  void _removeExpense(Expense expense) {
+    final expenseIndex = _registeredExpenses.indexOf(expense);
+
+    setState(() {
+      _registeredExpenses.remove(expense);
+    });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 3),
+        content: const Text('Expense Deleted !'),
+        action: SnackBarAction(
+          label: 'undo',
+          onPressed: () {
+            setState(() {
+              _registeredExpenses.insert(expenseIndex, expense);
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   void _showModalBottomSheet(BuildContext context) {
     showModalBottomSheet(
+      isScrollControlled: true,
       context: context,
       builder: (BuildContext context) {
-        return const NewExpense();
+        return NewExpense(onAddExpense: _addExpense);
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Flutter ExpenseTracker'),
-          actions: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                _showModalBottomSheet(context);
-              },
+    Widget mainContent = const Center(
+      child: Text('No expense found. Start adding some !'),
+    );
+
+    if (_registeredExpenses.isNotEmpty) {
+      mainContent = Column(
+        children: [
+          const Text('The chart'),
+          Expanded(
+            child: ExpensesList(
+              expenses: _registeredExpenses,
+              onRemovexpense: _removeExpense,
             ),
-          ],
-        ),
-        body: Column(
-          children: [
-            const Text('The chart'),
-            Expanded(
-              child: ExpensesList(expenses: _registeredExpenses),
-            ),
-          ],
-        ),
+          ),
+        ],
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Flutter ExpenseTracker'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              _showModalBottomSheet(context);
+            },
+          ),
+        ],
       ),
+      body: mainContent,
     );
   }
 }

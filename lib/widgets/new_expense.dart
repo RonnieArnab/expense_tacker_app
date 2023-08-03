@@ -5,7 +5,9 @@ import 'package:expense_tacker_app/models/expense.dart' as category;
 final formatter = DateFormat.yMd();
 
 class NewExpense extends StatefulWidget {
-  const NewExpense({super.key});
+  const NewExpense({super.key, required this.onAddExpense});
+
+  final void Function(category.Expense expenses) onAddExpense;
 
   @override
   State<NewExpense> createState() => _NewExpenseState();
@@ -57,6 +59,15 @@ class _NewExpenseState extends State<NewExpense> {
       );
       return;
     }
+
+    widget.onAddExpense(
+      category.Expense(
+          title: _titleController.text,
+          amount: enteredAmount,
+          date: _selectedDate!,
+          category: _selectedCategory),
+    );
+    Navigator.pop(context);
   }
 
   @override
@@ -75,7 +86,7 @@ class _NewExpenseState extends State<NewExpense> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
       child: Column(
         children: [
           TextField(
@@ -92,6 +103,7 @@ class _NewExpenseState extends State<NewExpense> {
             children: [
               Expanded(
                 child: TextField(
+                  keyboardType: TextInputType.number,
                   controller: _expenseController,
                   decoration: const InputDecoration(
                     label: Text('Amount'),
